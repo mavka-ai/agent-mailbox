@@ -13,6 +13,14 @@ Create the run with `run-create --label LABEL` if requested and not already init
 
 Record returned task ID and thread ID. Give the teammate its first prompt through an available launcher with the CLI/database paths, run ID, its own and leader IDs, task/thread IDs, skill path and allowed artifacts. A database message cannot bootstrap an unstarted process.
 
+Grant in the task everything it needs up front: every worktree or directory it must change, and any paid or external action it may take. A teammate that hits a missing permission asks and waits a bounded time, then takes the cautious path, which usually means doing only part of the task.
+
+## Watch while teammates work
+
+The mailbox never wakes you. From the moment a teammate starts until its `result` arrives, keep a watcher on your inbox that surfaces each new `question` and `result` to you as it lands. Waiting only for the teammate's process to exit, or reading its final output, misses its questions. In Claude Code, run the watcher with the Monitor tool (one event per new message; re-arm it when it expires); elsewhere, repeat short `wait` calls between your other work. The watcher must stop when the teammate's process exits.
+
+Answer a `question` as soon as it arrives: reply with what you know, or route it to the human and say so. Claim and ack receipts and checkpoints too, so the inbox holds only unhandled messages.
+
 ## Receive and route
 
 Use `inbox`, then `claim --id MESSAGE_ID`; alternatively `wait --timeout 20` signals availability without reserving it. `--timeout` accepts integer seconds 1..30; a larger value is rejected with exit 2, so cover a longer budget by repeating short waits. Read the claim's current lease token. After accepting or routing the message, `ack --id MESSAGE_ID --lease-token TOKEN`. Default lease is 120 seconds for delivery processing, not an entire task or human conversation. Acknowledge a question after routing it to your chat, before waiting on the human.
@@ -25,7 +33,7 @@ Present product questions in your current human conversation. Return the person'
   --send-key "$SEND_KEY" --body-file answer.txt
 ```
 
-The CLI inherits the thread. Report a task complete only after evaluating its separate `result`; receipt messages and ack confirm acceptance only. Continue polling within the current task's agreed budget; timeout exit 5 is not message loss. Do not start an unbounded loop.
+The CLI inherits the thread. Report a task complete only after evaluating its separate `result`; receipt messages and ack confirm acceptance only. Continue polling within the current task's agreed budget; timeout exit 5 is not message loss. Do not start an unbounded loop: tie every watcher to a running teammate or a deadline.
 
 ## Retry and replace
 
